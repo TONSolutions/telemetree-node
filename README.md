@@ -14,7 +14,7 @@ The Telemetree Node.js SDK provides a simple and efficient way to track and anal
 Install the Telemetree SDK using npm:
 
 ```shell
-npm install telemetree-node
+npm install @onsolutions/telemetree-node
 ```
 
 ### Usage
