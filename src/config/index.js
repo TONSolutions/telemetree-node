@@ -2,39 +2,35 @@ const axios = require("axios");
 const { BotTrackingConfig } = require("../schemas/telemetreeSchemas");
 
 class Config {
-  constructor(apiKey, projectId, options = {}) {
+  constructor(apiKey, projectId) {
     this.apiKey = apiKey;
     this.projectId = projectId;
 
-    // Validate and assign options
-    const validatedConfig = new BotTrackingConfig({
-      publicKey: options.publicKey,
-      host: options.host,
-      appName: options.appName,
-      ...options
-    });
-
-    // Assign validated configuration values
-    this.autoCaptureTelegram = validatedConfig.autoCaptureTelegram;
-    this.publicKey = validatedConfig.publicKey;
-    this.host = validatedConfig.host;
-    this.appName = validatedConfig.appName;
-    this.autoCaptureTelegramEvents = validatedConfig.autoCaptureTelegramEvents;
-    this.autoCaptureCommands = validatedConfig.autoCaptureCommands;
-    this.autoCaptureMessages = validatedConfig.autoCaptureMessages;
-
-    this.config = this.getConfig();
+    this.config = null;
   }
 
-  async getConfig() {
+  async fetchConfig() {
     try {
-      const response = await axios.get(`${this.host}/config`, {
-        headers: { Authorization: `Bearer ${this.apiKey}` }
+      const url = `https://config.ton.solutions/v1/client/config?project=${this.projectId}`;
+      const headers = { Authorization: `Bearer ${this.apiKey}` };
+
+      const response = await axios.get(url, { headers });
+      const responseData = response.data;
+
+      this.config = new BotTrackingConfig({
+        publicKey: responseData.publicKey,
+        host: responseData.host || "https://ebn.telemetree.io",
+        appName: responseData.appName || "YourAppName",
+        autoCaptureTelegram: responseData.autoCaptureTelegram,
+        autoCaptureTelegramEvents: responseData.autoCaptureTelegramEvents,
+        autoCaptureCommands: responseData.autoCaptureCommands,
+        autoCaptureMessages: responseData.autoCaptureMessages
       });
-      return response.data;
     } catch (error) {
       console.error("Failed to fetch configuration:", error);
-      return {};
+      throw new Error(
+        "Could not initialize Config due to configuration fetch failure."
+      );
     }
   }
 }
