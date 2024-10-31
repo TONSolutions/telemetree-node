@@ -1,8 +1,9 @@
 const axios = require("axios");
-const EncryptionService = require("./encryption/encryptionService");
 const Config = require("./config");
+const EncryptionService = require("./encryption/encryptionService");
 const EventBuilder = require("./utils/eventBuilder");
 const orchestrateEvent = require("./utils/orchestrator");
+const convertPublicKey = require("./utils/convertPublicKey"); // Utility to convert public key format
 
 class TelemetreeClient {
   constructor(apiKey, projectId) {
@@ -15,18 +16,15 @@ class TelemetreeClient {
   }
 
   async initialize() {
-    await this.config.fetchConfig(); // Fetch configuration
+    await this.config.fetchConfig();
 
-    // Initialize services that depend on the fetched configuration
-    this.encryptionService = new EncryptionService(
-      this.config.config.publicKey
-    );
+    const publicKey = convertPublicKey(this.config.config.publicKey);
+    this.encryptionService = new EncryptionService(publicKey);
     this.httpClient = axios.create({ baseURL: this.config.config.host });
     this.eventBuilder = new EventBuilder(this.config.config);
   }
 
   async track(event) {
-    // Ensure that initialize has been called before tracking
     if (!this.encryptionService || !this.httpClient || !this.eventBuilder) {
       await this.initialize();
     }
