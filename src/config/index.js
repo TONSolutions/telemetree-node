@@ -5,7 +5,6 @@ class Config {
   constructor(apiKey, projectId) {
     this.apiKey = apiKey;
     this.projectId = projectId;
-
     this.config = null;
   }
 
@@ -17,14 +16,16 @@ class Config {
       const response = await axios.get(url, { headers });
       const responseData = response.data;
 
+      console.log("Configuration response:", responseData);
+
       this.config = new BotTrackingConfig({
-        publicKey: responseData.publicKey,
-        host: responseData.host || "https://ebn.telemetree.io",
-        appName: responseData.appName || "YourAppName",
-        autoCaptureTelegram: responseData.autoCaptureTelegram,
-        autoCaptureTelegramEvents: responseData.autoCaptureTelegramEvents,
-        autoCaptureCommands: responseData.autoCaptureCommands,
-        autoCaptureMessages: responseData.autoCaptureMessages
+        publicKey: responseData.public_key,
+        host: responseData.host,
+        appName: responseData.appName || "DefaultAppName", // Use a fallback if appName is missing
+        autoCaptureTelegram: responseData.auto_capture_telegram,
+        autoCaptureTelegramEvents: responseData.auto_capture_telegram_events,
+        autoCaptureCommands: responseData.auto_capture_commands,
+        autoCaptureMessages: responseData.auto_capture_messages
       });
     } catch (error) {
       console.error("Failed to fetch configuration:", error);
